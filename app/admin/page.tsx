@@ -1,44 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "../lib/supabase";
 
-export default function AdminPage() {
-  const [nome, setNome] = useState("");
-  const [dominio, setDominio] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [cnpj, setCnpj] = useState("");
-
-  const [metatag, setMetatag] = useState("");
-  const [missao, setMissao] = useState("");
-  const [sobrenos, setSobreNos] = useState("");
-
-  const [email, setEmail] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [facebook, setFacebook] = useState("");
-
-  const [politica, setPolitica] = useState("");
-  const [rodape, setRodape] = useState("");
-
-  const [cidade, setCidade] = useState("");
-  const [estado, setEstado] = useState("");
-
-  const [slogan, setSlogan] = useState("");
-
-  const [seoTitle, setSeoTitle] = useState("");
-  const [seoDescription, setSeoDescription] = useState("");
-  const [keywords, setKeywords] = useState("");
-
-  const [logo, setLogo] = useState("");
-  const [banner, setBanner] = useState("");
-
+export default function Admin() {
   const [sites, setSites] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    cnpj: "",
+    nome: "",
+    dominio: "",
+    dominio_real: "",
+    email: "",
+    whatsapp: "",
+    cidade: "",
+    estado: "",
+    slogan: "",
+    sobrenos: "",
+    missao: "",
+  });
 
   useEffect(() => {
-    buscarSites();
+    carregarSites();
   }, []);
 
-  async function buscarSites() {
+  async function carregarSites() {
     const { data } = await supabase
       .from("sites")
       .select("*")
@@ -49,162 +37,70 @@ export default function AdminPage() {
     }
   }
 
-  async function uploadImagem(
-    event: any,
-    tipo: "logo" | "banner"
-  ) {
-    const file = event.target.files[0];
-
-    if (!file) return;
-
-    const fileName = `${Date.now()}-${file.name}`;
-
-    const { error } = await supabase.storage
-      .from("sites")
-      .upload(fileName, file);
-
-    if (error) {
-      console.log(error);
-      alert("Erro upload");
+  async function gerarDados() {
+    if (!form.cnpj) {
+      alert("Digite um CNPJ");
       return;
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage
-      .from("sites")
-      .getPublicUrl(fileName);
-
-    if (tipo === "logo") {
-      setLogo(publicUrl);
-    }
-
-    if (tipo === "banner") {
-      setBanner(publicUrl);
-    }
-  }
-
-  async function gerarDados() {
     try {
-      const cnpjLimpo = cnpj.replace(/\D/g, "");
+      setLoading(true);
 
       const response = await fetch(
-        `https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`
+        `https://brasilapi.com.br/api/cnpj/v1/${form.cnpj.replace(/\D/g, "")}`
       );
 
       const data = await response.json();
 
-      const nomeEmpresa =
-        data.razao_social || "";
+      const nome = data.razao_social || "";
+      const cidade = data.municipio || "";
+      const estado = data.uf || "";
+      const email = data.email || "";
+      const telefone = data.ddd_telefone_1 || "";
 
-      const fantasia =
-        data.nome_fantasia || nomeEmpresa;
-
-      const dominioGerado = fantasia
-        .toLowerCase()
-        .replace(/\s/g, "-")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-
-      const cidadeEmpresa =
-        data.municipio || "";
-
-      const estadoEmpresa =
-        data.uf || "";
-
-      setNome(nomeEmpresa);
-
-      setDominio(dominioGerado);
-
-      setWhatsapp(
-        data.ddd_telefone_1 || ""
-      );
-
-      setCidade(cidadeEmpresa);
-
-      setEstado(estadoEmpresa);
-
-      setEmail(
-        `contato@${dominioGerado}.com`
-      );
-
-      setInstagram(
-        "https://instagram.com"
-      );
-
-      setFacebook(
-        "https://facebook.com"
-      );
-
-      setSlogan(
-        `${fantasia} transformando negócios com excelência e inovação.`
-      );
-
-      setMissao(`
-A missão da ${nomeEmpresa} é oferecer soluções profissionais com excelência, transparência e compromisso com resultados consistentes para seus clientes em ${cidadeEmpresa}/${estadoEmpresa}.
-      `);
-
-      setSobreNos(`
-A ${nomeEmpresa} atua no mercado oferecendo soluções profissionais e atendimento especializado. Localizada em ${cidadeEmpresa}/${estadoEmpresa}, a empresa busca excelência, inovação e qualidade em todos os seus serviços.
-      `);
-
-      setPolitica(`
-Política de privacidade da ${nomeEmpresa}. Todas as informações são tratadas com segurança, responsabilidade e respeito à privacidade dos usuários.
-      `);
-
-      setRodape(`
-${nomeEmpresa} • CNPJ ${cnpj} • ${cidadeEmpresa}/${estadoEmpresa} • Todos os direitos reservados.
-      `);
-
-      setSeoTitle(
-        `${fantasia} | Empresa Profissional em ${cidadeEmpresa}`
-      );
-
-      setSeoDescription(
-        `${fantasia} oferece soluções profissionais em ${cidadeEmpresa}/${estadoEmpresa} com excelência, inovação e atendimento especializado.`
-      );
-
-      setKeywords(
-        `${fantasia}, ${cidadeEmpresa}, ${estadoEmpresa}, empresa, soluções, atendimento`
-      );
-
-      setMetatag(
-        `<meta name="facebook-domain-verification" content="xxxxx" />`
-      );
-
+      setForm({
+        ...form,
+        nome,
+        cidade,
+        estado,
+        email,
+        whatsapp: telefone,
+        slogan: `Especialistas em ${data.cnae_fiscal_descricao || "soluções profissionais"}`,
+        sobrenos: `A ${nome}, registrada sob o CNPJ ${form.cnpj}, atua no segmento de ${data.cnae_fiscal_descricao || "serviços"} em ${cidade}/${estado}.`,
+        missao: `A missão da ${nome} é atuar com excelência no segmento de ${data.cnae_fiscal_descricao || "serviços"}, oferecendo soluções confiáveis e atendimento profissional.`,
+      });
     } catch (error) {
-      console.log(error);
       alert("Erro ao buscar CNPJ");
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function salvarSite() {
-    const { error } = await supabase
-      .from("sites")
-      .insert([
-        {
-          nome,
-          dominio,
-          whatsapp,
-          cnpj,
-          metatag,
-          missao,
-          sobrenos,
-          email,
-          instagram,
-          facebook,
-          politica,
-          rodape,
-          slogan,
-          logo,
-          banner,
-          cidade,
-          estado,
-          seo_title: seoTitle,
-          seo_description: seoDescription,
-          keywords,
-        },
-      ]);
+  async function criarSite() {
+    if (!form.nome || !form.dominio) {
+      alert("Preencha nome e domínio");
+      return;
+    }
+
+    setLoading(true);
+
+    const { error } = await supabase.from("sites").insert([
+      {
+        nome: form.nome,
+        dominio: form.dominio,
+        dominio_real: form.dominio_real,
+        whatsapp: form.whatsapp,
+        email: form.email,
+        cidade: form.cidade,
+        estado: form.estado,
+        slogan: form.slogan,
+        sobrenos: form.sobrenos,
+        missao: form.missao,
+        cnpj: form.cnpj,
+      },
+    ]);
+
+    setLoading(false);
 
     if (error) {
       console.log(error);
@@ -212,158 +108,234 @@ ${nomeEmpresa} • CNPJ ${cnpj} • ${cidadeEmpresa}/${estadoEmpresa} • Todos 
       return;
     }
 
-    alert("Site salvo!");
+    alert("Site criado");
 
-    buscarSites();
+    setForm({
+      cnpj: "",
+      nome: "",
+      dominio: "",
+      dominio_real: "",
+      email: "",
+      whatsapp: "",
+      cidade: "",
+      estado: "",
+      slogan: "",
+      sobrenos: "",
+      missao: "",
+    });
+
+    carregarSites();
+  }
+
+  async function excluirSite(id: number) {
+    const confirmar = confirm("Deseja excluir?");
+
+    if (!confirmar) return;
+
+    await supabase.from("sites").delete().eq("id", id);
+
+    carregarSites();
   }
 
   return (
-    <main className="min-h-screen bg-black text-white p-10">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#020617] text-white p-10">
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-[#081028] border border-white/10 rounded-3xl p-8">
+          <h1 className="text-5xl font-black mb-10">
+            Criar Site
+          </h1>
 
-        <h1 className="text-6xl font-black mb-12">
-          Criar Site
-        </h1>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <input
+              placeholder="CNPJ"
+              value={form.cnpj}
+              onChange={(e) =>
+                setForm({ ...form, cnpj: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
 
-        <div className="grid gap-6">
-
-          <div>
-            <label className="block mb-2 font-bold">
-              CNPJ
-            </label>
-
-            <div className="flex gap-4">
-              <input
-                value={cnpj}
-                onChange={(e) =>
-                  setCnpj(e.target.value)
-                }
-                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-white"
-              />
-
-              <button
-                onClick={gerarDados}
-                className="bg-green-500 hover:bg-green-600 px-8 rounded-xl font-bold"
-              >
-                Gerar dados
-              </button>
-            </div>
+            <button
+              onClick={gerarDados}
+              className="bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-bold"
+            >
+              {loading ? "Gerando..." : "Gerar dados"}
+            </button>
           </div>
 
-          <div>
-            <label className="block mb-2 font-bold">
-              Upload Banner
-            </label>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <input
+              placeholder="Razão Social"
+              value={form.nome}
+              onChange={(e) =>
+                setForm({ ...form, nome: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
 
             <input
-              type="file"
+              placeholder="Domínio interno"
+              value={form.dominio}
               onChange={(e) =>
-                uploadImagem(e, "banner")
+                setForm({ ...form, dominio: e.target.value })
               }
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4"
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
             />
           </div>
 
-          <input
-            placeholder="Nome"
-            value={nome}
-            onChange={(e) =>
-              setNome(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
-          />
+          <div className="mb-4">
+            <input
+              placeholder="Domínio real"
+              value={form.dominio_real}
+              onChange={(e) =>
+                setForm({ ...form, dominio_real: e.target.value })
+              }
+              className="w-full bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
-          <input
-            placeholder="Domínio"
-            value={dominio}
-            onChange={(e) =>
-              setDominio(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
-          />
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <input
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
 
-          <textarea
-            placeholder="Slogan"
-            value={slogan}
-            onChange={(e) =>
-              setSlogan(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[120px]"
-          />
+            <input
+              placeholder="WhatsApp"
+              value={form.whatsapp}
+              onChange={(e) =>
+                setForm({ ...form, whatsapp: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
-          <textarea
-            placeholder="SEO Title"
-            value={seoTitle}
-            onChange={(e) =>
-              setSeoTitle(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[120px]"
-          />
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <input
+              placeholder="Cidade"
+              value={form.cidade}
+              onChange={(e) =>
+                setForm({ ...form, cidade: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
 
-          <textarea
-            placeholder="SEO Description"
-            value={seoDescription}
-            onChange={(e) =>
-              setSeoDescription(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[120px]"
-          />
+            <input
+              placeholder="Estado"
+              value={form.estado}
+              onChange={(e) =>
+                setForm({ ...form, estado: e.target.value })
+              }
+              className="bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
-          <textarea
-            placeholder="Keywords"
-            value={keywords}
-            onChange={(e) =>
-              setKeywords(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[120px]"
-          />
+          <div className="mb-4">
+            <input
+              placeholder="Slogan"
+              value={form.slogan}
+              onChange={(e) =>
+                setForm({ ...form, slogan: e.target.value })
+              }
+              className="w-full bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
-          <textarea
-            placeholder="Nossa missão"
-            value={missao}
-            onChange={(e) =>
-              setMissao(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[180px]"
-          />
+          <div className="mb-4">
+            <textarea
+              placeholder="Sobre nós"
+              value={form.sobrenos}
+              onChange={(e) =>
+                setForm({ ...form, sobrenos: e.target.value })
+              }
+              className="w-full h-40 bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
-          <textarea
-            placeholder="Sobre nós"
-            value={sobrenos}
-            onChange={(e) =>
-              setSobreNos(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[180px]"
-          />
-
-          <textarea
-            placeholder="Política"
-            value={politica}
-            onChange={(e) =>
-              setPolitica(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[180px]"
-          />
-
-          <textarea
-            placeholder="Rodapé"
-            value={rodape}
-            onChange={(e) =>
-              setRodape(e.target.value)
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 min-h-[180px]"
-          />
+          <div className="mb-6">
+            <textarea
+              placeholder="Nossa missão"
+              value={form.missao}
+              onChange={(e) =>
+                setForm({ ...form, missao: e.target.value })
+              }
+              className="w-full h-40 bg-[#0b1220] border border-white/10 rounded-2xl p-4 outline-none"
+            />
+          </div>
 
           <button
-            onClick={salvarSite}
-            className="bg-green-500 hover:bg-green-600 transition-all p-5 rounded-2xl font-black text-xl"
+            onClick={criarSite}
+            className="w-full bg-white text-black rounded-2xl p-4 font-bold"
           >
-            Salvar Site
+            Criar Site
           </button>
-
         </div>
 
+        <div className="mt-14">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-black">
+                Sites criados
+              </h2>
+
+              <p className="text-zinc-400">
+                Gerencie todos os sites criados
+              </p>
+            </div>
+
+            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-5 py-3 rounded-2xl font-bold">
+              {sites.length} sites
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {sites.map((site) => (
+              <div
+                key={site.id}
+                className="bg-[#081028] border border-white/10 rounded-3xl p-6 flex items-center justify-between"
+              >
+                <div>
+                  <h3 className="text-3xl font-black">
+                    {site.nome}
+                  </h3>
+
+                  <p className="text-zinc-400 mt-1">
+                    {site.dominio}
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Link
+                    href={`/${site.dominio}`}
+                    target="_blank"
+                    className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl font-bold"
+                  >
+                    Abrir
+                  </Link>
+
+                  <Link
+                    href={`/admin/editar/${site.id}`}
+                    className="bg-emerald-500 hover:bg-emerald-600 px-5 py-3 rounded-2xl font-bold"
+                  >
+                    Editar
+                  </Link>
+
+                  <button
+                    onClick={() => excluirSite(site.id)}
+                    className="bg-red-500 hover:bg-red-600 px-5 py-3 rounded-2xl font-bold"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

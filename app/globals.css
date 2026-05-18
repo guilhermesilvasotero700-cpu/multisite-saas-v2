@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050816;
+  --foreground: #ffffff;
+
+  --card: #0f172a;
+  --border: #1e293b;
+
+  --primary: #10b981;
+  --primary-hover: #059669;
+
+  --input: #111827;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(
+    to bottom right,
+    #020617,
+    #071226,
+    #020617
+  );
+
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+
+  min-height: 100vh;
+}
+
+/* Inputs */
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 14px 16px;
+
+  background: rgba(15, 23, 42, 0.8);
+
+  border: 1px solid #1e293b;
+
+  border-radius: 14px;
+
+  color: white;
+
+  outline: none;
+
+  transition: 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #10b981;
+
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Botões */
+
+button {
+  border: none;
+
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Cards */
+
+.card {
+  background: rgba(15, 23, 42, 0.75);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  border-radius: 24px;
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Scroll */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 999px;
 }
