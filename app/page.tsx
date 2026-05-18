@@ -1,15 +1,22 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold mb-4">
-          Meu Sistema Multi-Site
-        </h1>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
+      <h1 className="text-6xl font-black mb-4">
+        MultiSite SaaS
+      </h1>
 
-        <p className="text-zinc-400 text-xl">
-          Plataforma criada por Guilherme 🚀
-        </p>
-      </div>
+      <p className="text-zinc-400 mb-10">
+        Plataforma de criação de sites
+      </p>
+
+      <Link
+        href="/admin"
+        className="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-2xl font-bold text-lg transition"
+      >
+        Entrar no Admin
+      </Link>
     </main>
-  )
+  );
 }
