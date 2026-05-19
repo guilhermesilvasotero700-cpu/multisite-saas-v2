@@ -1,22 +1,39 @@
-import Link from "next/link";
-
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
-      <h1 className="text-6xl font-black mb-4">
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#0f172a",
+        color: "white",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        fontFamily: "Arial",
+      }}
+    >
+      <h1 style={{ fontSize: "60px", marginBottom: "20px" }}>
         MultiSite SaaS
       </h1>
 
-      <p className="text-zinc-400 mb-10">
-        Plataforma de criação de sites
+      <p style={{ fontSize: "22px", color: "#cbd5e1" }}>
+        Plataforma moderna de criação de sites
       </p>
 
-      <Link
+      <a
         href="/admin"
-        className="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-2xl font-bold text-lg transition"
+        style={{
+          marginTop: "30px",
+          background: "#2563eb",
+          padding: "15px 30px",
+          borderRadius: "10px",
+          color: "white",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
       >
         Entrar no Admin
-      </Link>
+      </a>
     </main>
   );
 }
