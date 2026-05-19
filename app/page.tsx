@@ -12,11 +12,21 @@ export default function Home() {
         fontFamily: "Arial",
       }}
     >
-      <h1 style={{ fontSize: "60px", marginBottom: "20px" }}>
+      <h1
+        style={{
+          fontSize: "60px",
+          marginBottom: "20px",
+        }}
+      >
         MultiSite SaaS
       </h1>
 
-      <p style={{ fontSize: "22px", color: "#cbd5e1" }}>
+      <p
+        style={{
+          fontSize: "22px",
+          color: "#cbd5e1",
+        }}
+      >
         Plataforma moderna de criação de sites
       </p>
 
